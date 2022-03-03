@@ -35,22 +35,36 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         leftKnee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
         leftAnkle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
         
-        angle = count.get_angle(rightHip, rightKnee, rightAnkle)
+        kneeAngle = (count.get_angle(rightHip, rightKnee, rightAnkle) + count.get_angle(leftHip, leftKnee, leftAnkle)) / 2
+        hipAngle = (count.get_angle(rightShoulder, rightHip, rightKnee) + count.get_angle(leftShoulder, leftHip, leftKnee)) / 2
+        elbowAngle = (count.get_angle(rightShoulder, rightElbow, rightWrist) + count.get_angle(leftShoulder, leftElbow, leftWrist)) / 2
 
-        angle, reps, status = count.squat(angle, reps, status)
+        
+        #Squat
+        hipAngle, kneeAngle, reps, status = count.squat(hipAngle, kneeAngle, reps, status)
 
-        cv2.rectangle(frame, (0,0), (225,73), (245,117,16), -1)
+        #BenchPress
+        # elbowAngle, reps, status = count.benchpress(elbowAngle, reps, status)
+
+        #DeadLift
+        # hipAngle, kneeAngle, reps, status = count.deadlift(hipAngle, kneeAngle, reps, status)
+
+        cv2.rectangle(frame, (400,760), (534,960), (255,255,255), -1)
         
-        cv2.putText(frame, 'REPS', (15,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-        cv2.putText(frame, str(reps), (10,60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2, cv2.LINE_AA)
+        cv2.putText(frame, 'REPS', (430,790), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv2.LINE_AA)
+        cv2.putText(frame, str(reps), (435,910), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,0,0), 5, cv2.LINE_AA)
         
-        cv2.putText(frame, 'STATUS', (65,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
-        cv2.putText(frame, status, (60,60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2, cv2.LINE_AA)
+        # cv2.putText(frame, 'STATUS', (65,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+        cv2.putText(frame, status, (160,60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2, cv2.LINE_AA)
+        
         
         cv2.imshow('Training Censor', frame)
+        # print(frame.shape) # 이미지 세로, 가로, channel
+
 
         if cv2.waitKey(1) == ord('q'):
             break
+
 
 cap.release()
 cv2.destroyAllWindows()

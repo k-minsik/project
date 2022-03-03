@@ -12,15 +12,41 @@ def get_angle(top, mid, bottom):
     return angle
 
 
-def squat(angle, reps, status):
-    if angle < 70:
-            status = "SQUAT"
-    if angle > 160 and status == 'SQUAT':
+def squat(hipAngle, kneeAngle, reps, status):
+    if hipAngle < 100 and kneeAngle < 70:
+        status = "SQUAT"
+    if (hipAngle > 160 and kneeAngle > 160) and status == 'SQUAT':
         status = "UP"
         reps +=1
     
-    print(angle)
-    return angle, reps, status
+    # print(hipAngle, kneeAngle)
+    return hipAngle, kneeAngle, reps, status
+
+
+def benchpress(elbowAngle,reps, status):
+    if elbowAngle < 100:
+        status = "Down"
+    if elbowAngle > 160 and status == 'Down':
+        status = "UP"
+        reps +=1
+    
+    # print(elbowAngle)
+    return elbowAngle, reps, status
+
+
+def deadlift(hipAngle, kneeAngle, reps, status):
+    if hipAngle < 60 and kneeAngle < 120:
+        status = "Down"
+    if (hipAngle > 170 and kneeAngle > 170) and status == 'Down':
+        status = "UP"
+        reps +=1
+    
+    # print(hipAngle, kneeAngle)
+    return hipAngle, kneeAngle, reps, status
+
+
+
+
 
 
 
