@@ -1,81 +1,87 @@
 import cv2
 import mediapipe as mp
-import numpy as np
-import flask
+from flask import Flask, render_template, Response
+import math
+import count
 
+app = Flask(__name__)
 mp_drawing = mp.solutions.drawing_utils
-mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
-# 이미지 파일의 경우 이것을 사용하세요.:
-IMAGE_FILES = []
-BG_COLOR = (192, 192, 192)  # 회색
-with mp_pose.Pose(
-        static_image_mode=True,
-        model_complexity=2,
-        enable_segmentation=True,
-        min_detection_confidence=0.5) as pose:
-    for idx, file in enumerate(IMAGE_FILES):
-        image = cv2.imread(file)
-        image_height, image_width, _ = image.shape
-        # 처리 전 BGR 이미지를 RGB로 변환합니다.
-        results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+# reps = 0 
+# status = "Start"
 
-        if not results.pose_landmarks:
-            continue
-        print(
-            f'Nose coordinates: ('
-            f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].x * image_width}, '
-            f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].y * image_height})'
-        )
+camera = cv2.VideoCapture('squat.mp4')
 
-        annotated_image = image.copy()
-        # 이미지를 분할합니다.
-        # 경계 주변의 분할을 개선하려면 "image"가 있는
-        # "results.segmentation_mask"에 공동 양방향 필터를 적용하는 것이 좋습니다.
-        condition = np.stack((results.segmentation_mask,) * 3, axis=-1) > 0.1
-        bg_image = np.zeros(image.shape, dtype=np.uint8)
-        bg_image[:] = BG_COLOR
-        annotated_image = np.where(condition, annotated_image, bg_image)
-        # 이미지 위에 포즈 랜드마크를 그립니다.
-        mp_drawing.draw_landmarks(
-            annotated_image,
-            results.pose_landmarks,
-            mp_pose.POSE_CONNECTIONS,
-            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-        cv2.imwrite('/tmp/annotated_image' +
-                    str(idx) + '.png', annotated_image)
-        # 포즈 월드 랜드마크를 그립니다.
-        mp_drawing.plot_landmarks(
-            results.pose_world_landmarks, mp_pose.POSE_CONNECTIONS)
+def gen_frames():  
+    reps = 0 
+    status = "Start"
 
-# 웹캠, 영상 파일의 경우 이것을 사용하세요.:
-cap = cv2.VideoCapture(0)
-with mp_pose.Pose(
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.5) as pose:
-    while cap.isOpened():
-        success, image = cap.read()
-        if not success:
-            print("카메라를 찾을 수 없습니다.")
-            # 동영상을 불러올 경우는 'continue' 대신 'break'를 사용합니다.
-            continue
-            
-        # 필요에 따라 성능 향상을 위해 이미지 작성을 불가능함으로 기본 설정합니다.
-        image.flags.writeable = False
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        results = pose.process(image)
+    with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+        while True:
+            success, frame = camera.read()  # read the camera frame
+            if not success:
+                break
+            else:
+                results = pose.process(frame)
+        
+                landmarks = results.pose_landmarks.landmark
+                
+                mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)               
+                
+                rightShoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+                rightElbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
+                rightWrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
+                rightHip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+                rightKnee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
+                rightAnkle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
+                leftShoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                leftElbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+                leftWrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+                leftHip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+                leftKnee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+                leftAnkle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
+                
+                kneeAngle = (count.get_angle(rightHip, rightKnee, rightAnkle) + count.get_angle(leftHip, leftKnee, leftAnkle)) / 2
+                hipAngle = (count.get_angle(rightShoulder, rightHip, rightKnee) + count.get_angle(leftShoulder, leftHip, leftKnee)) / 2
+                elbowAngle = (count.get_angle(rightShoulder, rightElbow, rightWrist) + count.get_angle(leftShoulder, leftElbow, leftWrist)) / 2
 
-        # 포즈 주석을 이미지 위에 그립니다.
-        image.flags.writeable = True
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        mp_drawing.draw_landmarks(
-            image,
-            results.pose_landmarks,
-            mp_pose.POSE_CONNECTIONS,
-            landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-        # 보기 편하게 이미지를 좌우 반전합니다.
-        cv2.imshow('MediaPipe Pose', cv2.flip(image, 1))
-        if cv2.waitKey(5) & 0xFF == 27:
-            break
-cap.release()
+                
+                #Squat
+                hipAngle, kneeAngle, reps, status = count.squat(hipAngle, kneeAngle, reps, status)
+
+                # #BenchPress
+                # # elbowAngle, reps, status = count.benchpress(elbowAngle, reps, status)
+
+                # #DeadLift
+                # # hipAngle, kneeAngle, reps, status = count.deadlift(hipAngle, kneeAngle, reps, status)
+                
+                # # print(frame.shape) # 이미지 세로, 가로, channel
+                height, width, _ = frame.shape
+
+                cv2.rectangle(frame, (width-width//3,height-height//3), (width,height), (255,255,255), -1)
+
+                cv2.putText(frame, 'REPS', (int(width-width//3.1),int(height-height//3.6)), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,0), 2, cv2.LINE_AA)
+                cv2.putText(frame, str(reps), (int(width-width//4),int(height-height//9)), cv2.FONT_HERSHEY_SIMPLEX, 5, (0,0,0), 4, cv2.LINE_AA)
+                
+                # cv2.putText(frame, 'STATUS', (65,12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, cv2.LINE_AA)
+                cv2.putText(frame, status, (0,int(height//10)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2, cv2.LINE_AA)
+
+                frame_resized = cv2.resize(frame, (768, 1024), _, _, interpolation=cv2.INTER_CUBIC)
+
+
+                _, buffer = cv2.imencode('.jpg', frame_resized)
+                frame_resized = buffer.tobytes()
+                yield (b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + frame_resized + b'\r\n')
+                    
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == "__main__":
+    app.run(debug=True)
