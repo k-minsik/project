@@ -16,7 +16,7 @@ def squat(hipAngle, kneeAngle, reps, status):
     if hipAngle < 100 and kneeAngle < 70:
         status = "SQUAT"
     if (hipAngle > 160 and kneeAngle > 160) and status == 'SQUAT':
-        status = "UP"
+        status = "  UP "
         reps +=1
     
     # print(hipAngle, kneeAngle)
@@ -44,11 +44,36 @@ def deadlift(hipAngle, kneeAngle, reps, status):
     # print(hipAngle, kneeAngle)
     return hipAngle, kneeAngle, reps, status
 
+def onerm(weight, reps):
+    # NCSA 계산상수 활용
+    if reps >= 12:  # 12회 이상은 12회로 계산
+        best = weight / (0.7)
+    elif reps == 11:
+        best = weight / (0.73)
+    elif reps == 10:
+        best = weight / (0.75)
+    elif reps == 9:
+        best = weight / (0.77)
+    elif reps == 8:
+        best = weight / (0.80)
+    elif reps == 7:
+        best = weight / (0.83)
+    elif reps == 6:
+        best = weight / (0.85)
+    elif reps == 5:
+        best = weight / (0.87)
+    elif reps == 4:
+        best = weight / (0.90)
+    elif reps == 3:
+        best = weight / (0.93)
+    elif reps == 2:
+        best = weight / (0.95)
+    elif reps == 1:
+        best = weight
 
-
-
-
+    return best
 
 
 if __name__ == '__main__':
-    pass
+    
+    print(onerm(140, 5))
