@@ -1,10 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Fitness Trainer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8  offset-lg-2">
-                <h3 class="mt-5">Live Streaming</h3>
-                <img src="{{ url_for('video_feed') }}" width="100%">
+    <section class="main">
+        <div class="main-container">
+            <div class="inner">
+                <div class="col-lg-8  offset-lg-2">
+                    <h3 class="mt-5">M . B . T . 1</h3>
+                    <img src="{{ url_for('video_feed') }}" width="100%">
+                </div>
             </div>
         </div>
-    </div>
-    </body>
+    </section>
+
+    <section class="input">
+        <dic class="input-container">
+            <div class="inner">
+                <h3>Weight : <input type="number" required="required"></h3>
+                <h3> REPS  :   9   </h3>
+                <h3><button type="button" onclick="alert('Congraturation !')">C O M P L E T E</button></h3>
+            </div>
+        </dic>
+
+    </section>
+
+
+</body>
+</html>
