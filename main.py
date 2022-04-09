@@ -1,21 +1,28 @@
 import cv2
 import mediapipe as mp
 from flask import Flask, render_template, Response
+import pymysql
 import count
+import sqldef
+
+
+conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
+cursor = conn.cursor()
 
 app = Flask(__name__)
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
+reps = 0 
 
-# camera = cv2.VideoCapture('squat.mp4')
-camera = cv2.VideoCapture(0)
+def measurement():
+    global reps
+    reps = 0
+    status = "start"
 
-def gen_frames():  
-    reps = 0 
-    status = "Start"
-
+    # camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture('test/squat2.mp4')
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while True:
             success, frame = camera.read()
@@ -44,7 +51,7 @@ def gen_frames():
 
             try:
                 landmarks = results.pose_landmarks.landmark
-                print(landmarks)
+                # print(landmarks)
                 mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS, landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
                 rightShoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
@@ -53,19 +60,30 @@ def gen_frames():
                 rightHip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
                 rightKnee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
                 rightAnkle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value].y]
+                rightToe = [landmarks[mp_pose.PoseLandmark.RIGHT_FOOT_INDEX.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_FOOT_INDEX.value].y]
                 leftShoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
                 leftElbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
                 leftWrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
                 leftHip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
                 leftKnee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
                 leftAnkle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value].y]
+                leftToe = [landmarks[mp_pose.PoseLandmark.LEFT_FOOT_INDEX.value].x,landmarks[mp_pose.PoseLandmark.LEFT_FOOT_INDEX.value].y]
                 
                 kneeAngle = (count.get_angle(rightHip, rightKnee, rightAnkle) + count.get_angle(leftHip, leftKnee, leftAnkle)) / 2
                 hipAngle = (count.get_angle(rightShoulder, rightHip, rightKnee) + count.get_angle(leftShoulder, leftHip, leftKnee)) / 2
+                ankleAngle = (count.get_angle(rightKnee, rightAnkle, rightToe) + count.get_angle(leftKnee, leftAnkle, leftToe)) / 2
                 elbowAngle = (count.get_angle(rightShoulder, rightElbow, rightWrist) + count.get_angle(leftShoulder, leftElbow, leftWrist)) / 2
 
                 #Squat
-                hipAngle, kneeAngle, reps, status = count.squat(hipAngle, kneeAngle, reps, status)
+                reps, status = count.squat(hipAngle, kneeAngle, ankleAngle, reps, status)
+
+                try:
+                    sqldef.saveData(cursor, conn, "sqaut", reps)
+                    print("성공")
+                except:
+                    print("실패")
+
+                # r1rm = count.onerm(weight, reps) #나중엔 바꿔야 할거 같음
 
                 #BenchPress
                 # elbowAngle, reps, status = count.benchpress(elbowAngle, reps, status)
@@ -73,8 +91,6 @@ def gen_frames():
                 #DeadLift
                 # hipAngle, kneeAngle, reps, status = count.deadlift(hipAngle, kneeAngle, reps, status)
 
-                # Flip the frame horizontally for a selfie-view display.
-                
             except:
                 pass
 
@@ -83,10 +99,14 @@ def gen_frames():
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            
+def gen_frames():  
+    return measurement()
                     
 @app.route('/')
 def index():
-    return render_template('index.html')
+    global reps
+    return render_template('index.html', REPS = str(reps))
 
 @app.route('/video_feed')
 def video_feed():

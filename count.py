@@ -1,26 +1,48 @@
 import cv2
 import mediapipe as mp
+import numpy as np
 import math
 
 
 def get_angle(top, mid, bottom):
-    angle = math.degrees(math.atan2(bottom[1] - mid[1], bottom[0] - mid[0]) - math.atan2(top[1] - mid[1], top[0] - mid[0]))
-
-    if angle > 180.0:
-        angle = 360 - angle
-
+    top = np.array(top)
+    mid = np.array(mid)
+    bottom = np.array(bottom)
+    
+    radians = np.arctan2(bottom[1]-mid[1], bottom[0]-mid[0]) - np.arctan2(top[1]-mid[1], top[0]-mid[0])
+    angle = np.abs(radians*180.0/np.pi)
+    
+    if angle >180.0:
+        angle = 360-angle
+        
     return angle
 
 
-def squat(hipAngle, kneeAngle, reps, status):
-    if hipAngle < 100 and kneeAngle < 70:
+def squat(hipAngle, kneeAngle, ankleAngle, reps, status):
+    """
+        서있을때 최대치
+        hip : 176.6430509727502
+        knee : 172.7119943786289
+        ankle : 97.29720263433197
+
+        앉았을떄 최저치
+        hip : 51.8688295282371
+        knee : 28.861298582203872
+        ankle : 55.830331312741734
+
+        스쿼트 자세인 하이바, 로우바의 서있을때 관절의 각도는 거의 동일하다.
+        하지만 앉았을때 각도는 로우바가 하이바보다 고관절의 각도가 더 작지만, 무릎과 발목의 각도는 하이바가 더 작다.
+
+        예시 영상은 하이바, 풀스쾃 이에 따라 각도를 참조하여 여유를 두었다. 
+    """
+    if (hipAngle > 40 and hipAngle < 60) and (kneeAngle > 25 and kneeAngle < 70) and (ankleAngle > 50 and ankleAngle < 70):
         status = "SQUAT"
-    if (hipAngle > 160 and kneeAngle > 160) and status == 'SQUAT':
+    if (hipAngle > 170  and hipAngle < 180) and (kneeAngle < 180 and kneeAngle > 160) and (ankleAngle > 90) and status == 'SQUAT':
         status = "  UP "
         reps +=1
     
     # print(hipAngle, kneeAngle)
-    return hipAngle, kneeAngle, reps, status
+    return reps, status
 
 
 def benchpress(elbowAngle,reps, status):
