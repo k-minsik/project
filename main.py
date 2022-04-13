@@ -6,7 +6,8 @@ import count
 import sqldef
 
 
-conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
+
+conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
 cursor = conn.cursor()
 
 app = Flask(__name__)
@@ -22,7 +23,7 @@ def measurement():
     status = "start"
 
     # camera = cv2.VideoCapture(0)
-    camera = cv2.VideoCapture('test/squat2.mp4')
+    camera = cv2.VideoCapture('squat.mp4')
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while True:
             success, frame = camera.read()
