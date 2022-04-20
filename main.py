@@ -1,29 +1,31 @@
 import cv2
 import mediapipe as mp
 from flask import Flask, render_template, Response
-import pymysql
+# import pymysql
 import count
-import sqldef
+# import sqldef
 
 
 
-conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
-cursor = conn.cursor()
+# conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
+# cursor = conn.cursor()
 
 app = Flask(__name__)
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
-reps = 0 
+reps = 0
 
-def measurement():
+def gen_frames(camera):
+# def measurement():
     global reps
     reps = 0
     status = "start"
 
     # camera = cv2.VideoCapture(0)
-    camera = cv2.VideoCapture('squat.mp4')
+    # camera = cv2.VideoCapture(url)
+    # camera = cv2.VideoCapture('squat.mp4')
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while True:
             success, frame = camera.read()
@@ -78,11 +80,11 @@ def measurement():
                 #Squat
                 reps, status = count.squat(hipAngle, kneeAngle, ankleAngle, reps, status)
 
-                try:
-                    sqldef.saveData(cursor, conn, "sqaut", reps)
-                    print("성공")
-                except:
-                    print("실패")
+                # try:
+                #     sqldef.saveData(cursor, conn, "sqaut", reps)
+                #     print("성공")
+                # except:
+                #     print("실패")
 
                 # r1rm = count.onerm(weight, reps) #나중엔 바꿔야 할거 같음
 
@@ -101,8 +103,8 @@ def measurement():
             yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             
-def gen_frames():  
-    return measurement()
+# def gen_frames():  
+#     return measurement()
                     
 @app.route('/')
 def index():
@@ -111,7 +113,7 @@ def index():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_frames(cv2.VideoCapture(0)), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8000)
