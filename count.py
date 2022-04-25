@@ -17,38 +17,67 @@ def get_angle(top, mid, bottom):
     return angle
 
 
-def squat(RhipAngle, RkneeAngle, RankleAngle, LhipAngle, LkneeAngle, LankleAngle, reps, status):
+def squat(RhipAngle, RkneeAngle, RankleAngle, LhipAngle, LkneeAngle, LankleAngle, reps, status, side):
     
-    if ((RkneeAngle < 90) and (RhipAngle < 90) and (RankleAngle < 90)) or ((LkneeAngle < 90) and (LhipAngle < 90) and (LankleAngle < 90)):
+    if ((RkneeAngle < 90) and (RhipAngle < 90) and (RankleAngle < 90)):
+        side = 1 # right side
         status = "SQUAT"
-    if (((RhipAngle > 170)  and (RkneeAngle > 160) and (RankleAngle > 90)) or ((LhipAngle > 170)  and (LkneeAngle > 160) and (LankleAngle > 90))) and status == 'SQUAT':
+    elif((LkneeAngle < 90) and (LhipAngle < 90) and (LankleAngle < 90)):
+        side = 2 # left side
+        status = "SQUAT"
+
+
+    if ((RhipAngle > 170)  and (RkneeAngle > 160) and (RankleAngle > 90)) and status == 'SQUAT' and side == 1:
         status = "  UP "
-        reps +=1
+        reps += 1
+    elif ((LhipAngle > 170)  and (LkneeAngle > 160) and (LankleAngle > 90)) and status == 'SQUAT' and side == 2:
+        status = "  UP "
+        reps += 1
     
     # print(hipAngle, kneeAngle)
-    return reps, status
+    return reps, status, side
 
 
-def benchpress(RelbowAngle, LelbowAngle, reps, status):
-    if RelbowAngle < 100 or LelbowAngle < 100:
+def benchpress(RelbowAngle, LelbowAngle, reps, status, side):
+    
+    if RelbowAngle < 100:
+        side = 1
         status = "Down"
-    if (RelbowAngle > 160 or LelbowAngle > 160) and status == 'Down':
+    elif LelbowAngle < 100:
+        side = 2
+        status = "Down"
+
+
+    if RelbowAngle > 160 and status == 'Down' and side == 1:
         status = "UP"
-        reps +=1
+        reps += 1
+    elif LelbowAngle > 160 and status == 'Down' and side == 2:
+        status = "UP"
+        reps += 1
     
     # print(elbowAngle)
-    return reps, status
+    return reps, status, side
 
 
-def deadlift(RhipAngle, RkneeAngle, LhipAngle, LkneeAngle, reps, status):
-    if (RhipAngle < 100 and RkneeAngle < 150) or (LhipAngle < 100 and LkneeAngle < 150):
+def deadlift(RhipAngle, RkneeAngle, LhipAngle, LkneeAngle, reps, status, side):
+    
+    if (RhipAngle < 100 and RkneeAngle < 150):
+        side = 1
         status = "Down"
-    if ((RhipAngle > 170 and RkneeAngle > 170) or (LhipAngle > 170 and LkneeAngle > 170)) and status == 'Down':
+    elif (LhipAngle < 100 and LkneeAngle < 150):
+        side = 2
+        status = "Down"
+
+
+    if (RhipAngle > 170 and RkneeAngle > 170) and status == 'Down' and side == 1:
         status = "UP"
-        reps +=1
+        reps += 1
+    elif (LhipAngle > 170 and LkneeAngle > 170) and status == 'Down' and side == 2:
+        status = "UP"
+        reps += 1
     
     # print(hipAngle, kneeAngle)
-    return reps, status
+    return reps, status, side
 
 def onerm(weight, reps):
     best = 0

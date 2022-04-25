@@ -14,13 +14,14 @@ mp_pose = mp.solutions.pose
 
 reps = 0
 status = "Start"
+side = 0
 # url = 'http://172.30.1.7:8000/'
 
 
 # camera = cv2.VideoCapture(0)
-# camera = cv2.VideoCapture('squat.mp4')
+camera = cv2.VideoCapture('squat.mp4')
 # camera = cv2.VideoCapture('bench.mp4')
-camera = cv2.VideoCapture('dead.mp4')
+# camera = cv2.VideoCapture('dead.mp4')
 # camera = cv2.VideoCapture(url)
 
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -83,13 +84,13 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         LelbowAngle = count.get_angle(leftShoulder, leftElbow, leftWrist)
         
         # #Squat
-        # reps, status = count.squat(RhipAngle, RkneeAngle, RankleAngle, LhipAngle, LkneeAngle, LankleAngle, reps, status)
+        reps, status, side = count.squat(RhipAngle, RkneeAngle, RankleAngle, LhipAngle, LkneeAngle, LankleAngle, reps, status, side)
 
         # #BenchPress
-        # reps, status = count.benchpress(RelbowAngle, LelbowAngle, reps, status)
+        # reps, status, side = count.benchpress(RelbowAngle, LelbowAngle, reps, status, side)
 
         # DeadLift
-        reps, status = count.deadlift(RhipAngle, RkneeAngle, LhipAngle, LkneeAngle, reps, status)
+        # reps, status, side = count.deadlift(RhipAngle, RkneeAngle, LhipAngle, LkneeAngle, reps, status, side)
 
 
         # try:
