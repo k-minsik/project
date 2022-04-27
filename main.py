@@ -6,7 +6,7 @@ import count
 import sqldef
 
 
-conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
+conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
 cursor = conn.cursor()
 
 app = Flask(__name__)
@@ -25,8 +25,8 @@ def gen_frames_squat():
     side = 0
     status = "start"
 
-    # camera = cv2.VideoCapture(0)
-    camera = cv2.VideoCapture('squat.mp4')
+    camera = cv2.VideoCapture(1)
+    # camera = cv2.VideoCapture('squat.mp4')
     # camera = cv2.VideoCapture(url)
 
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -88,8 +88,8 @@ def gen_frames_squat():
             except:
                 pass
 
-            # resize_frame = cv2.resize(frame, (480, 640), interpolation=cv2.INTER_CUBIC)
-            _, buffer = cv2.imencode('.jpg', frame)
+            resize_frame = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_CUBIC)
+            _, buffer = cv2.imencode('.jpg', resize_frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
@@ -101,8 +101,8 @@ def gen_frames_bench():
     side = 0
     status = "start"
 
-    # camera = cv2.VideoCapture(0)
-    camera = cv2.VideoCapture('bench.mp4')
+    camera = cv2.VideoCapture(1)
+    # camera = cv2.VideoCapture('bench.mp4')
     # camera = cv2.VideoCapture(url)
 
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -157,7 +157,7 @@ def gen_frames_bench():
             except:
                 pass
 
-            resize_frame = cv2.resize(frame, (480, 640), interpolation=cv2.INTER_CUBIC)
+            resize_frame = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_CUBIC)
             _, buffer = cv2.imencode('.jpg', resize_frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
@@ -172,8 +172,8 @@ def gen_frames_dead():
     side = 0
     status = "start"
 
-    # camera = cv2.VideoCapture(0)
-    camera = cv2.VideoCapture('dead.mp4')
+    camera = cv2.VideoCapture(1)
+    # camera = cv2.VideoCapture('dead.mp4')
     # camera = cv2.VideoCapture(url)
 
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -234,8 +234,8 @@ def gen_frames_dead():
             except:
                 pass
 
-            # resize_frame = cv2.resize(frame, (480, 640), interpolation=cv2.INTER_CUBIC)
-            _, buffer = cv2.imencode('.jpg', frame)
+            resize_frame = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_CUBIC)
+            _, buffer = cv2.imencode('.jpg', resize_frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
