@@ -4,12 +4,12 @@ create database IF NOT EXISTS mbt1;
 use mbt1;
 alter database mbt1 default character set utf8mb4;
 
-set foreign_key_checks = 0;   -- 외래키 체크하지 않는 것으로 설정
-drop table IF EXISTS User cascade;   -- 기존 고객 테이블 제거  
-drop table IF EXISTS Center cascade;   -- 기존 대리점 테이블 제거  
-drop table IF EXISTS Record cascade;   -- 기존 직원 테이블 제거  
-drop table IF EXISTS Ranking cascade;   -- 기존 렌탈제품 테이블 제거  
-set foreign_key_checks = 1;   -- 외래키 체크하는 것으로 설정
+set foreign_key_checks = 0;
+drop table IF EXISTS User cascade;
+drop table IF EXISTS Center cascade;
+drop table IF EXISTS Record cascade; 
+drop table IF EXISTS Ranking cascade;  
+set foreign_key_checks = 1;
 
 
 create table Center (
@@ -36,7 +36,7 @@ Rreps INT default 0,
 R1rm INT default 0,
 UID varchar(10) NOT NULL,
 CCODE INT NOT NULL,
-primary key(RDate),
+primary key(REvent, RDate),
 foreign key (UID) references User(UID),
 foreign key (CCODE) references User(CCODE));
 
