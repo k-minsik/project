@@ -4,22 +4,22 @@ import datetime
 # conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
 # cursor = conn.cursor()
 
-def saveData(cur, con, event, reps):
+def saveData(cur, con, event, weight, reps, oneRM):
     # Change Pk Key RDate -> REvent, RDate
     try:
         try:
             # Insert Data
-            insert_sql = "insert into Record values('" + event + "', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, " + str(reps) + ", 0, 'kms', 1111);"
+            insert_sql = "insert into Record values('" + event + "', '" + datetime.date.today().strftime("%y-%m-%d") + "', " + str(weight) + ", " + str(reps) + ", " + str(oneRM) + ", 'kms', 1111);"
             cur.execute(insert_sql)
             con.commit()
-            print(event + "새로운 데이터 생성")
+            print(event + ": 새로운 데이터 생성")
 
         except:
             # Update Data
-            update_sql = "update Record set Rreps = " + str(reps) + " where REvent = '" + event + "' and RDate = '" + datetime.date.today().strftime("%y-%m-%d") + "';"
+            update_sql = "update Record set RWeight = " + str(weight) + ", Rreps = " + str(reps) + ", R1rm = " + str(oneRM) + " where REvent = '" + event + "' and RDate = '" + datetime.date.today().strftime("%y-%m-%d") + "';"
             cur.execute(update_sql)
             con.commit()
-            print(event + "오늘 데이터 최신화")
+            print(event + ": 오늘 데이터 최신화")
     except:
         con.rollback()
         print("실패")
