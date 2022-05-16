@@ -31,15 +31,15 @@ def gen_frames(event):
     if event == "Squat":
         reps_s = 0
         camera = cv2.VideoCapture('squat2.mp4')
-        # camera = cv2.VideoCapture(1)
+        # camera = cv2.VideoCapture(0)
     elif event == "BenchPress":
         reps_b = 0
         camera = cv2.VideoCapture('bench.mp4')
-        # camera = cv2.V/ideoCapture(1)
+        # camera = cv2.VideoCapture(0)
     elif event == "Deadlift":
         reps_d
         camera = cv2.VideoCapture('dead.mp4')
-        # camera = cv2.VideoCapture(1)
+        # camera = cv2.VideoCapture(0)
 
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while True:
@@ -112,7 +112,7 @@ def gen_frames(event):
             except:
                 pass
 
-            resize_frame = cv2.resize(frame, (378, 504), interpolation=cv2.INTER_CUBIC)
+            resize_frame = cv2.resize(frame, (390, 520), interpolation=cv2.INTER_CUBIC)
             _, buffer = cv2.imencode('.jpg', resize_frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
@@ -152,6 +152,22 @@ def result():
     params = request.get_json()
     sqldef.saveData(cursor, conn, params['event'], params['weight'], params['reps'], params['oneRM'])
     return params
+
+@app.route('/profile/Total', methods=['GET'])
+def userData_T():
+    return jsonify(data = sqldef.getData(cursor, conn, "Total"))
+
+@app.route('/profile/Squat', methods=['GET'])
+def userData_S():
+    return jsonify(data = sqldef.getData(cursor, conn, "Squat"))
+
+@app.route('/profile/BenchPress', methods=['GET'])
+def userData_B():
+    return jsonify(data = sqldef.getData(cursor, conn, "BenchPress"))
+
+@app.route('/profile/Deadlift', methods=['GET'])
+def userData_D():
+    return jsonify(data = sqldef.getData(cursor, conn, "Deadlift"))
 
 
 if __name__ == "__main__":
