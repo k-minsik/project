@@ -5,10 +5,10 @@ use mbt1;
 alter database mbt1 default character set utf8mb4;
 
 set foreign_key_checks = 0;
-drop table IF EXISTS User cascade;
+drop table IF EXISTS User cascade; 
 drop table IF EXISTS Center cascade;
-drop table IF EXISTS Record cascade; 
-drop table IF EXISTS Ranking cascade;  
+drop table IF EXISTS Record cascade;  
+drop table IF EXISTS Ranking cascade; 
 set foreign_key_checks = 1;
 
 
@@ -48,14 +48,43 @@ insert into User
 values('kms', '1234', 'kms', 1111);
 
 insert into Record
-values('squat', '22-04-03', 100, 10, 140, 'kms', 1111);
+values('Squat', '22-05-02', 10, 1, 10, 'kms', 1111);
+insert into Record
+values('Squat', '22-05-05', 20, 2, 21, 'kms', 1111);
+insert into Record
+values('Squat', '22-05-13', 30, 3, 32, 'kms', 1111);
+insert into Record
+values('Squat', '22-05-21', 40, 4, 44, 'kms', 1111);
+insert into Record
+values('Squat', '22-05-26', 50, 5, 58, 'kms', 1111);
+insert into Record
+values('Squat', '22-05-18', 60, 6, 71, 'kms', 1111);
+insert into Record
+values('Squat', '22-05-07', 70, 7, 84, 'kms', 1111);
+insert into Record
+values('Squat', '22-05-15', 80, 8, 100, 'kms', 1111);
 
-update Record
-set RDate = '22-04-02', RWeight = 0, R1rm = 0
-where REvent = 'squat' and UID = 'kms' and CCODE = 1111;
+insert into Record
+values('BenchPress', '22-05-02', 10, 1, 10, 'kms', 1111);
+insert into Record
+values('BenchPress', '22-05-28', 20, 2, 21, 'kms', 1111);
+insert into Record
+values('BenchPress', '22-05-09', 30, 3, 32, 'kms', 1111);
+insert into Record
+values('BenchPress', '22-05-17', 40, 4, 44, 'kms', 1111);
 
-delete from Record
-where RDate = '22-04-09';
+insert into Record
+values('Deadlift', '22-05-03', 10, 1, 10, 'kms', 1111);
+insert into Record
+values('Deadlift', '22-05-14', 20, 2, 21, 'kms', 1111);
+insert into Record
+values('Deadlift', '22-05-21', 30, 3, 32, 'kms', 1111);
+insert into Record
+values('Deadlift', '22-05-10', 40, 4, 44, 'kms', 1111);
+insert into Record
+values('Deadlift', '22-05-16', 50, 5, 58, 'kms', 1111);
+insert into Record
+values('Deadlift', '22-05-07', 60, 6, 71, 'kms', 1111);
 
 -- 1
 select * from Center;
