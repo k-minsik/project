@@ -67,7 +67,7 @@ def getData(cur, con, event):
         
         total = best_s1rm + best_b1rm + best_d1rm
         # print("Total : " + str(total) + ", S : " + str(best_s1rm) + ", B : " + str(best_b1rm) + ", D : " + str(best_d1rm))
-        oneRM = {'Total':total, 'S':best_s1rm, 'B':best_b1rm, 'D':best_d1rm}
+        oneRM = {'User':'Hongik', 'Total':total, 'S':best_s1rm, 'B':best_b1rm, 'D':best_d1rm}
 
         # print(oneRM)
         # print("Squat : " + str(s_1rm))
