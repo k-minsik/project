@@ -1,7 +1,7 @@
 import pymysql
 import datetime
 
-conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
+conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
 cursor = conn.cursor()
 
 def saveData(cur, con, event, weight, reps, oneRM):
@@ -25,15 +25,16 @@ def saveData(cur, con, event, weight, reps, oneRM):
         print("실패")
 
 
-def getData(cur, con, event):
+def get_userData(cur, con, event, uid):
     try:
         # ssql = "select * from Record where R1rm = (select max(R1rm) from Record where REvent = 'Squat' and UID = 'kms');"
         # cur.execute(ssql)
         # s1rm = cur.fetchone()
         # print(s1rm)
 
-        ssql = "select * from Record where REvent = 'Squat' and UID = 'kms' order by RDate desc LIMIT 7;"
+        ssql = "select * from Record where REvent = 'Squat' and UID = '" + str(uid) + "' order by RDate desc LIMIT 7;"
         cur.execute(ssql)
+        con.commit()
         s1rm = cur.fetchall()
         best_s1rm = 0
         s_1rm = {}
@@ -43,8 +44,9 @@ def getData(cur, con, event):
             # print(str(i[0]) + " " + str(i[1]) + " " + str(i[4]))
             s_1rm[str(i[1])] = i[4]
             
-        bsql = "select * from Record where REvent = 'BenchPress' and UID = 'kms' order by RDate desc LIMIT 7;"
+        bsql = "select * from Record where REvent = 'BenchPress' and UID = '" + str(uid) + "' order by RDate desc LIMIT 7;"
         cur.execute(bsql)
+        con.commit()
         b1rm = cur.fetchall()
         best_b1rm = 0
         b_1rm = {}
@@ -54,8 +56,9 @@ def getData(cur, con, event):
             # print(str(j[0]) + " " + str(j[1]) + " " + str(j[4]))
             b_1rm[str(j[1])] = j[4]
 
-        dsql = "select * from Record where REvent = 'Deadlift' and UID = 'kms' order by RDate desc LIMIT 7;"
+        dsql = "select * from Record where REvent = 'Deadlift' and UID = '" + str(uid) + "' order by RDate desc LIMIT 7;"
         cur.execute(dsql)
+        con.commit()
         d1rm = cur.fetchall()
         best_d1rm = 0
         d_1rm = {}
@@ -64,10 +67,12 @@ def getData(cur, con, event):
                 best_d1rm = k[4]
             # print(str(k[0]) + " " + str(k[1]) + " " + str(k[4]))
             d_1rm[str(k[1])] = k[4]
-        
+            uname = k[5]
+
+
         total = best_s1rm + best_b1rm + best_d1rm
         # print("Total : " + str(total) + ", S : " + str(best_s1rm) + ", B : " + str(best_b1rm) + ", D : " + str(best_d1rm))
-        oneRM = {'User':'Hongik', 'Total':total, 'S':best_s1rm, 'B':best_b1rm, 'D':best_d1rm}
+        oneRM = {'User':uname, 'Total':total, 'S':best_s1rm, 'B':best_b1rm, 'D':best_d1rm}
 
         # print(oneRM)
         # print("Squat : " + str(s_1rm))
@@ -90,19 +95,64 @@ def getData(cur, con, event):
         con.rollback()
 
 
-def deleteData(cur, con, reps):
+def login(cur, con, uid, upw):
     try:
-        str2 = input("삭제할 인덱스 속성을 입력하시오 : ")
-        sql = "drop index ix_" + str2 + " on employee"
-        cur.execute(sql)
+        log_sql = "select Uname from User where UID = '" + str(uid) + "' and UPW = '" + str(upw) + "';"
+        cur.execute(log_sql)
         con.commit()
+
+        uname = cur.fetchone()
+        print(str(uname[0]) + "님 환영합니다.")
+        
+        return 1 # success login
     except:
+        print("일치하는 ID 또는 PW가 없습니다.")
+        con.rollback()
+
+        return 0 # fail login
+
+
+
+
+def rank_sys(cur, con):
+    try:
+        rank_list = {}
+        query = "select UID from User"
+        cur.execute(query)
+        conn.commit()
+
+        userID = cur.fetchall()
+
+        for i in userID:
+            cur.execute("select MAX(RWeight) from Record where REvent = 'Squat' and UID = '" + i[0] + "';")
+            best_s = cur.fetchall()
+
+            cur.execute("select MAX(RWeight) from Record where REvent = 'BenchPress' and UID = '" + i[0] + "';")
+            best_b = cur.fetchall()
+
+            cur.execute("select MAX(RWeight) from Record where REvent = 'Deadlift' and UID = '" + i[0] + "';")
+            best_d = cur.fetchall()
+
+            best_rm = best_s[0][0] + best_b[0][0] + best_d[0][0]
+            rank_list[i[0]] = best_rm
+
+        rank_list = dict(sorted(rank_list.items(), key=lambda x:x[1], reverse=True))
+
+        print("랭크 조회 성공")
+        return rank_list
+
+    except:
+        print("랭크 조회 실패")
         con.rollback()
 
 
 
 if __name__ == '__main__':
-    print(getData(cursor, conn, "Total"))
-    print(getData(cursor, conn, "Squat"))
-    print(getData(cursor, conn, "BenchPress"))
-    print(getData(cursor, conn, "Deadlift"))
+
+    print(login(cursor, conn, "kms", "1234"))
+
+    rank_sys(cursor, conn)
+
+
+
+
