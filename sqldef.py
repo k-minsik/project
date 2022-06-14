@@ -1,15 +1,14 @@
 import pymysql
 import datetime
 
-conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
+conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
 cursor = conn.cursor()
 
-def saveData(cur, con, event, weight, reps, oneRM):
-    # Change Pk Key RDate -> REvent, RDate
+def saveData(cur, con, event, weight, reps, oneRM, uid, ccode):
     try:
         try:
             # Insert Data
-            insert_sql = "insert into Record values('" + event + "', '" + datetime.date.today().strftime("%y-%m-%d") + "', " + str(weight) + ", " + str(reps) + ", " + str(oneRM) + ", 'kms', 1111);"
+            insert_sql = "insert into Record values('" + event + "', '" + datetime.date.today().strftime("%y-%m-%d") + "', " + str(weight) + ", " + str(reps) + ", " + str(oneRM) + ", '" + uid + "', " + str(ccode) + ");"
             cur.execute(insert_sql)
             con.commit()
             print(event + ": 새로운 데이터 생성")
@@ -25,13 +24,9 @@ def saveData(cur, con, event, weight, reps, oneRM):
         print("실패")
 
 
+
 def get_userData(cur, con, event, uid):
     try:
-        # ssql = "select * from Record where R1rm = (select max(R1rm) from Record where REvent = 'Squat' and UID = 'kms');"
-        # cur.execute(ssql)
-        # s1rm = cur.fetchone()
-        # print(s1rm)
-
         ssql = "select * from Record where REvent = 'Squat' and UID = '" + str(uid) + "' order by RDate desc LIMIT 7;"
         cur.execute(ssql)
         con.commit()
@@ -41,7 +36,6 @@ def get_userData(cur, con, event, uid):
         for i in s1rm:
             if i[4] >= best_s1rm:
                 best_s1rm = i[4]
-            # print(str(i[0]) + " " + str(i[1]) + " " + str(i[4]))
             s_1rm[str(i[1])] = i[4]
             
         bsql = "select * from Record where REvent = 'BenchPress' and UID = '" + str(uid) + "' order by RDate desc LIMIT 7;"
@@ -53,7 +47,6 @@ def get_userData(cur, con, event, uid):
         for j in b1rm:
             if j[4] >= best_b1rm:
                 best_b1rm = j[4]
-            # print(str(j[0]) + " " + str(j[1]) + " " + str(j[4]))
             b_1rm[str(j[1])] = j[4]
 
         dsql = "select * from Record where REvent = 'Deadlift' and UID = '" + str(uid) + "' order by RDate desc LIMIT 7;"
@@ -65,20 +58,11 @@ def get_userData(cur, con, event, uid):
         for k in d1rm:
             if k[4] >= best_d1rm:
                 best_d1rm = k[4]
-            # print(str(k[0]) + " " + str(k[1]) + " " + str(k[4]))
             d_1rm[str(k[1])] = k[4]
             uname = k[5]
 
-
         total = best_s1rm + best_b1rm + best_d1rm
-        # print("Total : " + str(total) + ", S : " + str(best_s1rm) + ", B : " + str(best_b1rm) + ", D : " + str(best_d1rm))
         oneRM = {'User':uname, 'Total':total, 'S':best_s1rm, 'B':best_b1rm, 'D':best_d1rm}
-
-        # print(oneRM)
-        # print("Squat : " + str(s_1rm))
-        # print("BenchPress : " + str(b_1rm))
-        # print("Deadlift : " + str(d_1rm))
-
 
         con.commit()
         if event == "Total":
@@ -95,9 +79,35 @@ def get_userData(cur, con, event, uid):
         con.rollback()
 
 
-def login(cur, con, uid, upw):
+
+def sign_up(cur, con, uid, upw):
     try:
-        log_sql = "select Uname from User where UID = '" + str(uid) + "' and UPW = '" + str(upw) + "';"
+        sign_sql = "insert into User values('" + uid + "', '" + upw + "');"
+        cur.execute(sign_sql)
+
+        init_sql_s = "insert into Record values('Squat', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, 0, 0, '" + uid + "', 0000);"
+        cur.execute(init_sql_s)
+
+        init_sql_b = "insert into Record values('BenchPress', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, 0, 0, '" + uid + "', 0000);"
+        cur.execute(init_sql_b)
+
+        init_sql_d = "insert into Record values('Deadlift', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, 0, 0, '" + uid + "', 0000);"
+        cur.execute(init_sql_d)
+        con.commit()
+        print(uid + ":" + upw + " 님 회원가입 성공")
+        return 1
+
+    except:
+        print("이미 존재하는 아이디 입니다.")
+        con.rollback()
+        return 0
+
+
+
+
+def log_in(cur, con, uid, upw):
+    try:
+        log_sql = "select UID from User where UID = '" + str(uid) + "' and UPW = '" + str(upw) + "';"
         cur.execute(log_sql)
         con.commit()
 
@@ -149,9 +159,10 @@ def rank_sys(cur, con):
 
 if __name__ == '__main__':
 
-    print(login(cursor, conn, "kms", "1234"))
+    print(sign_up(cursor, conn, "kms", "0000"))
+    print(log_in(cursor, conn, "kms", "1234"))
 
-    rank_sys(cursor, conn)
+    print(rank_sys(cursor, conn))
 
 
 

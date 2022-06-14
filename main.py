@@ -6,7 +6,7 @@ import count
 import sqldef
 
 
-conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
+conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
 cursor = conn.cursor()
 
 app = Flask(__name__)
