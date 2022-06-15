@@ -7,7 +7,7 @@ import count
 import sqldef
 
 
-conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
+conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
 cursor = conn.cursor()
 
 app = Flask(__name__)
@@ -170,28 +170,24 @@ def result(name):
 @app.route('/profile/Squat/<name>', methods=['GET'])
 def userData_S(name):
     squatt = sqldef.get_userData_s(cursor, conn, name)
-    # squatt = {'22-05-03': 100, '22-05-02': 200, '22-05-01': 100}
     print(squatt)
     return jsonify(data = squatt)
 
 @app.route('/profile/BenchPress/<name>', methods=['GET'])
 def userData_B(name):
     Benchp = sqldef.get_userData_b(cursor, conn, name)
-    # Benchp = {'22-05-03': 150, '22-05-02': 120, '22-05-01': 170}
     print(Benchp)
     return jsonify(data = Benchp)
 
 @app.route('/profile/Deadlift/<name>', methods=['GET'])
 def userData_D(name):
     Deadl = sqldef.get_userData_d(cursor, conn, name)
-    # Deadl = {'22-05-03': 58, '22-05-05': 44, '22-05-01': 71}
     print(Deadl)
     return jsonify(data = Deadl)
 
 @app.route('/profile/Total/<name>', methods=['GET'])
 def userData_T(name):
     total = sqldef.get_userData_t(cursor, conn, name)
-    # total = {'User': 'kms', 'Total': 12300, 'S': 2000, 'B': 10000, 'D': 300}
     print(total)
     return jsonify(data = total)
     

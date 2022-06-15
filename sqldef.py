@@ -2,7 +2,7 @@ import pymysql
 import datetime
 from time import sleep
 
-conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
+conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
 cursor = conn.cursor()
 
 def sign_up(cur, con, uid, upw):
@@ -70,7 +70,7 @@ def saveData(cur, con, event, weight, reps, oneRM, uid):
 
 def get_userData_s(cur, con, uid):
     try:
-        s_sql = "select RDate, RWeight from Record where UID = '" + uid + "' and REvent = 'Squat' order by RDate desc LIMIT 7;"
+        s_sql = "select RDate, RWeight from Record where UID = '" + uid + "' and REvent = 'Squat' order by RDate desc LIMIT 6;"
         cur.execute(s_sql)
         con.commit()
 
@@ -89,7 +89,7 @@ def get_userData_s(cur, con, uid):
 
 def get_userData_b(cur, con, uid):
     try:
-        b_sql = "select RDate, RWeight from Record where UID = '" + uid + "' and REvent = 'BenchPress' order by RDate desc LIMIT 7;"
+        b_sql = "select RDate, RWeight from Record where UID = '" + uid + "' and REvent = 'BenchPress' order by RDate desc LIMIT 6;"
         cur.execute(b_sql)
         con.commit()
 
@@ -107,7 +107,7 @@ def get_userData_b(cur, con, uid):
 
 def get_userData_d(cur, con, uid):
     try:
-        d_sql = "select RDate, RWeight from Record where UID = '" + uid + "' and REvent = 'Deadlift' order by RDate desc LIMIT 7;"
+        d_sql = "select RDate, RWeight from Record where UID = '" + uid + "' and REvent = 'Deadlift' order by RDate desc LIMIT 6;"
         cur.execute(d_sql)
         con.commit()
 
