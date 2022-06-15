@@ -1,97 +1,22 @@
 import pymysql
 import datetime
+from time import sleep
 
-conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
+conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
 cursor = conn.cursor()
-
-def saveData(cur, con, event, weight, reps, oneRM, uid, ccode):
-    try:
-        try:
-            # Insert Data
-            insert_sql = "insert into Record values('" + event + "', '" + datetime.date.today().strftime("%y-%m-%d") + "', " + str(weight) + ", " + str(reps) + ", " + str(oneRM) + ", '" + uid + "', " + str(ccode) + ");"
-            cur.execute(insert_sql)
-            con.commit()
-            print(event + ": 새로운 데이터 생성")
-
-        except:
-            # Update Data
-            update_sql = "update Record set RWeight = " + str(weight) + ", Rreps = " + str(reps) + ", R1rm = " + str(oneRM) + " where REvent = '" + event + "' and RDate = '" + datetime.date.today().strftime("%y-%m-%d") + "';"
-            cur.execute(update_sql)
-            con.commit()
-            print(event + ": 오늘 데이터 최신화")
-    except:
-        con.rollback()
-        print("실패")
-
-
-
-def get_userData(cur, con, event, uid):
-    try:
-        ssql = "select * from Record where REvent = 'Squat' and UID = '" + str(uid) + "' order by RDate desc LIMIT 7;"
-        cur.execute(ssql)
-        con.commit()
-        s1rm = cur.fetchall()
-        best_s1rm = 0
-        s_1rm = {}
-        for i in s1rm:
-            if i[4] >= best_s1rm:
-                best_s1rm = i[4]
-            s_1rm[str(i[1])] = i[4]
-            
-        bsql = "select * from Record where REvent = 'BenchPress' and UID = '" + str(uid) + "' order by RDate desc LIMIT 7;"
-        cur.execute(bsql)
-        con.commit()
-        b1rm = cur.fetchall()
-        best_b1rm = 0
-        b_1rm = {}
-        for j in b1rm:
-            if j[4] >= best_b1rm:
-                best_b1rm = j[4]
-            b_1rm[str(j[1])] = j[4]
-
-        dsql = "select * from Record where REvent = 'Deadlift' and UID = '" + str(uid) + "' order by RDate desc LIMIT 7;"
-        cur.execute(dsql)
-        con.commit()
-        d1rm = cur.fetchall()
-        best_d1rm = 0
-        d_1rm = {}
-        for k in d1rm:
-            if k[4] >= best_d1rm:
-                best_d1rm = k[4]
-            d_1rm[str(k[1])] = k[4]
-            uname = k[5]
-
-        total = best_s1rm + best_b1rm + best_d1rm
-        oneRM = {'User':uname, 'Total':total, 'S':best_s1rm, 'B':best_b1rm, 'D':best_d1rm}
-
-        con.commit()
-        if event == "Total":
-            return oneRM
-        elif event == "Squat":
-            return s_1rm
-        elif event == "BenchPress":
-            return b_1rm
-        elif event == "Deadlift":
-            return d_1rm
-
-    except:
-        print("실패")
-        con.rollback()
-
-
 
 def sign_up(cur, con, uid, upw):
     try:
         sign_sql = "insert into User values('" + uid + "', '" + upw + "');"
         cur.execute(sign_sql)
 
-        init_sql_s = "insert into Record values('Squat', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, 0, 0, '" + uid + "', 0000);"
+        init_sql_s = "insert into Record values('Squat', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, 0, 0, '" + uid + "', 1111);"
         cur.execute(init_sql_s)
 
-        init_sql_b = "insert into Record values('BenchPress', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, 0, 0, '" + uid + "', 0000);"
+        init_sql_b = "insert into Record values('BenchPress', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, 0, 0, '" + uid + "', 1111);"
         cur.execute(init_sql_b)
 
-        init_sql_d = "insert into Record values('Deadlift', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, 0, 0, '" + uid + "', 0000);"
+        init_sql_d = "insert into Record values('Deadlift', '" + datetime.date.today().strftime("%y-%m-%d") + "', 0, 0, 0, '" + uid + "', 1111);"
         cur.execute(init_sql_d)
         con.commit()
         print(uid + ":" + upw + " 님 회원가입 성공")
@@ -121,6 +46,112 @@ def log_in(cur, con, uid, upw):
 
         return 0 # fail login
 
+
+def saveData(cur, con, event, weight, reps, oneRM, uid):
+    try:
+        try:
+            # Insert Data
+            insert_sql = "insert into Record values('" + event + "', '" + datetime.date.today().strftime("%y-%m-%d") + "', " + str(weight) + ", " + str(reps) + ", " + str(oneRM) + ", '" + uid + "', 1111);"
+            cur.execute(insert_sql)
+            con.commit()
+            print(event + ": 새로운 데이터 생성")
+
+        except:
+            # Update Data
+            update_sql = "update Record set RWeight = " + str(weight) + ", Rreps = " + str(reps) + ", R1rm = " + str(oneRM) + " where UID = '" + uid + "' and REvent = '" + event + "' and RDate = '" + datetime.date.today().strftime("%y-%m-%d") + "';"
+            cur.execute(update_sql)
+            con.commit()
+            print(event + ": 오늘 데이터 최신화")
+    except:
+        con.rollback()
+        print("실패")
+
+
+
+def get_userData_s(cur, con, uid):
+    try:
+        s_sql = "select RDate, RWeight from Record where UID = '" + uid + "' and REvent = 'Squat' order by RDate desc LIMIT 7;"
+        cur.execute(s_sql)
+        con.commit()
+
+        s_record = cur.fetchall()
+        squat_record = {}
+        for i in s_record:
+            squat_record[str(i[0])] = i[1]
+        
+        return squat_record
+
+
+    except:
+        print("스쿼트 기록 조회 실패")
+        con.rollback()
+
+
+def get_userData_b(cur, con, uid):
+    try:
+        b_sql = "select RDate, RWeight from Record where UID = '" + uid + "' and REvent = 'BenchPress' order by RDate desc LIMIT 7;"
+        cur.execute(b_sql)
+        con.commit()
+
+        b_record = cur.fetchall()
+        bench_record = {}
+        for i in b_record:
+            bench_record[str(i[0])] = i[1]
+        
+        return bench_record
+
+    except:
+        print("벤치 기록 조회 실패")
+        con.rollback()
+
+
+def get_userData_d(cur, con, uid):
+    try:
+        d_sql = "select RDate, RWeight from Record where UID = '" + uid + "' and REvent = 'Deadlift' order by RDate desc LIMIT 7;"
+        cur.execute(d_sql)
+        con.commit()
+
+        d_record = cur.fetchall()
+        dead_record = {}
+        for i in d_record:
+            dead_record[str(i[0])] = i[1]
+        
+        return dead_record
+
+    except:
+        print("데드 기록 조회 실패")
+        con.rollback()
+
+
+def get_userData_t(cur, con, uid):
+    sleep(1)
+    try:
+        oneRM = {}
+        cur.execute("select MAX(RWeight) from Record where REvent = 'Squat' and UID = '" + uid + "';")
+        con.commit()
+        best_s = cur.fetchone()
+
+        cur.execute("select MAX(RWeight) from Record where REvent = 'BenchPress' and UID = '" + uid + "';")
+        con.commit()
+        best_b = cur.fetchone()
+
+        cur.execute("select MAX(RWeight) from Record where REvent = 'Deadlift' and UID = '" + uid + "';")
+        con.commit()
+        best_d = cur.fetchone()
+
+        best_rm = best_s[0] + best_b[0] + best_d[0]
+
+        oneRM['User'] = uid 
+        oneRM['Total'] = best_rm 
+        oneRM['S'] = best_s[0]
+        oneRM['B'] = best_b[0]
+        oneRM['D'] = best_d[0]
+        
+        return oneRM
+
+    except:
+        print("베스트 기록 조회 실패")
+        con.rollback()
 
 
 
@@ -157,13 +188,30 @@ def rank_sys(cur, con):
 
 
 
+
+
+
+
+
+
 if __name__ == '__main__':
 
-    print(sign_up(cursor, conn, "kms", "0000"))
-    print(log_in(cursor, conn, "kms", "1234"))
+    # print(sign_up(cursor, conn, "kms", "0000"))
+    # print(log_in(cursor, conn, "kms", "1234"))
 
-    print(rank_sys(cursor, conn))
+    # print(rank_sys(cursor, conn))
 
+    # print(get_userData_s(cursor, conn, 'kms'))
+    # print(get_userData_b(cursor, conn, 'kms'))
+    # print(get_userData_d(cursor, conn, 'kms'))
+
+    # print(get_userData_t(cursor, conn, 'kms'))
+
+
+    # print(type(get_userData_t(cursor, conn, 'kms')))
+    # print(type(get_userData_s(cursor, conn, 'kms')))
+    # print(type(get_userData_b(cursor, conn, 'kms')))
+    # print(type(get_userData_d(cursor, conn, 'kms')))
 
 
 

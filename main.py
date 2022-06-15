@@ -1,3 +1,4 @@
+from unicodedata import name
 import cv2
 import mediapipe as mp
 from flask import Flask, jsonify, render_template, Response, request
@@ -6,7 +7,7 @@ import count
 import sqldef
 
 
-conn = pymysql.connect(host='localhost', user='root', password='', db='mbt1', charset='utf8mb4')
+conn = pymysql.connect(host='localhost', user='root', password='alstlr2!', db='mbt1', charset='utf8mb4')
 cursor = conn.cursor()
 
 app = Flask(__name__)
@@ -118,78 +119,7 @@ def gen_frames(event):
             yield (b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-                    
-                    
-
-
-def get_userData(cur, con, event):
-    try:
-        # ssql = "select * from Record where R1rm = (select max(R1rm) from Record where REvent = 'Squat' and UID = 'kms');"
-        # cur.execute(ssql)
-        # s1rm = cur.fetchone()
-        # print(s1rm)
-
-        ssql = "select * from Record where REvent = 'Squat' and UID = 'kms' order by RDate desc LIMIT 7;"
-        cur.execute(ssql)
-        con.commit()
-        s1rm = cur.fetchall()
-        best_s1rm = 0
-        s_1rm = {}
-        for i in s1rm:
-            if i[4] >= best_s1rm:
-                best_s1rm = i[4]
-            # print(str(i[0]) + " " + str(i[1]) + " " + str(i[4]))
-            s_1rm[str(i[1])] = i[4]
-            
-        bsql = "select * from Record where REvent = 'BenchPress' and UID = 'kms' order by RDate desc LIMIT 7;"
-        cur.execute(bsql)
-        con.commit()
-        b1rm = cur.fetchall()
-        best_b1rm = 0
-        b_1rm = {}
-        for j in b1rm:
-            if j[4] >= best_b1rm:
-                best_b1rm = j[4]
-            # print(str(j[0]) + " " + str(j[1]) + " " + str(j[4]))
-            b_1rm[str(j[1])] = j[4]
-
-        dsql = "select * from Record where REvent = 'Deadlift' and UID = 'kms' order by RDate desc LIMIT 7;"
-        cur.execute(dsql)
-        con.commit()
-        d1rm = cur.fetchall()
-        best_d1rm = 0
-        d_1rm = {}
-        for k in d1rm:
-            if k[4] >= best_d1rm:
-                best_d1rm = k[4]
-            # print(str(k[0]) + " " + str(k[1]) + " " + str(k[4]))
-            d_1rm[str(k[1])] = k[4]
-            uname = k[5]
-
-
-        total = best_s1rm + best_b1rm + best_d1rm
-        # print("Total : " + str(total) + ", S : " + str(best_s1rm) + ", B : " + str(best_b1rm) + ", D : " + str(best_d1rm))
-        oneRM = {'User':uname, 'Total':total, 'S':best_s1rm, 'B':best_b1rm, 'D':best_d1rm}
-
-        # print(oneRM)
-        # print("Squat : " + str(s_1rm))
-        # print("BenchPress : " + str(b_1rm))
-        # print("Deadlift : " + str(d_1rm))
-
-
-        con.commit()
-        if event == "Total":
-            return oneRM
-        elif event == "Squat":
-            return s_1rm
-        elif event == "BenchPress":
-            return b_1rm
-        elif event == "Deadlift":
-            return d_1rm
-
-    except:
-        print("실패")
-        con.rollback()
+                
 
 
 
@@ -230,43 +160,41 @@ def cnt_bench():
 def cnt_dead():
     return jsonify(data = reps_d)
 
-@app.route('/result', methods=['POST'])
-def result():
+@app.route('/result/<name>', methods=['POST'])
+def result(name):
     params = request.get_json()
-    sqldef.saveData(cursor, conn, params['event'], params['weight'], params['reps'], params['oneRM'])
+    sqldef.saveData(cursor, conn, params['event'], params['weight'], params['reps'], params['oneRM'], name)
     return params
 
-@app.route('/profile/Total', methods=['GET'])
-def userData_T():
-    total = sqldef.get_userData(cursor, conn, 'Total')
-    return jsonify(data = total)
-    # return jsonify(data = sqldef.getData(cursor, conn, "Total"))
 
-@app.route('/profile/Squat', methods=['GET'])
-def userData_S():
-    squatt = {'22-05-03': 100, '22-05-02': 200, '22-05-01': 100}
-    # squatt = sqldef.get_userData(cursor, conn, "Squat")
+@app.route('/profile/Squat/<name>', methods=['GET'])
+def userData_S(name):
+    squatt = sqldef.get_userData_s(cursor, conn, name)
+    # squatt = {'22-05-03': 100, '22-05-02': 200, '22-05-01': 100}
     print(squatt)
-    print(type(squatt))
     return jsonify(data = squatt)
-    # return jsonify(data = sqldef.getData(cursor, conn, "Squat"))
 
-@app.route('/profile/BenchPress', methods=['GET'])
-def userData_B():
-    Benchp = {'22-05-03': 150, '22-05-02': 120, '22-05-01': 170}
-    # Benchp = get_userData(cursor, conn, 'BenchPress')
+@app.route('/profile/BenchPress/<name>', methods=['GET'])
+def userData_B(name):
+    Benchp = sqldef.get_userData_b(cursor, conn, name)
+    # Benchp = {'22-05-03': 150, '22-05-02': 120, '22-05-01': 170}
     print(Benchp)
-    print(type(Benchp))
     return jsonify(data = Benchp)
-    # return jsonify(data = sqldef.getData(cursor, conn, "BenchPress"))
 
-@app.route('/profile/Deadlift', methods=['GET'])
-def userData_D():
-    Deadl = {'22-05-03': 58, '22-05-05': 44, '22-05-01': 71}
-    # Deadl2 = sqldef.get_userData(cursor, conn, 'Deadlift')
+@app.route('/profile/Deadlift/<name>', methods=['GET'])
+def userData_D(name):
+    Deadl = sqldef.get_userData_d(cursor, conn, name)
+    # Deadl = {'22-05-03': 58, '22-05-05': 44, '22-05-01': 71}
+    print(Deadl)
     return jsonify(data = Deadl)
-    # return jsonify(data = sqldef.getData(cursor, conn, "Deadlift"))
 
+@app.route('/profile/Total/<name>', methods=['GET'])
+def userData_T(name):
+    total = sqldef.get_userData_t(cursor, conn, name)
+    # total = {'User': 'kms', 'Total': 12300, 'S': 2000, 'B': 10000, 'D': 300}
+    print(total)
+    return jsonify(data = total)
+    
 @app.route('/login', methods = ['GET', 'POST'])
 def log_in():
     params_user = request.get_json()
@@ -281,20 +209,26 @@ def rank_data():
 
 
 if __name__ == "__main__":
-    # app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8000)
 
-    # Benchp = get_userData(cursor, conn, 'BenchPress')
-    # print(Benchp)
-    # print(type(Benchp))
+    # total= sqldef.get_userData_t(cursor, conn, 'kms')
+    # print(total)
+    # print(type(total))
 
-    # Benchp = get_userData(cursor, conn, 'Deadlift')
-    # print(Benchp)
-    # print(type(Benchp))
+    # squat = sqldef.get_userData_s(cursor, conn, 'kms')
+    # print(squat)
+    # print(type(squat))
+
+    # bench = sqldef.get_userData_b(cursor, conn, 'kms')
+    # print(bench)
+    # print(type(bench))
     
-    # Benchp = get_userData(cursor, conn, 'Squat')
-    # print(Benchp)
-    # print(type(Benchp))
+    # dead = sqldef.get_userData_d(cursor, conn, 'kms')
+    # print(dead)
+    # print(type(dead))
 
-    print(sqldef.rank_sys(cursor, conn))
-    print(sqldef.login(cursor, conn, 'kms', '1234'))
-    print(sqldef.login(cursor, conn, 'psy', '2345'))
+    # print(sqldef.rank_sys(cursor, conn))
+    # print(sqldef.login(cursor, conn, 'kms', '1234'))
+    # print(sqldef.login(cursor, conn, 'psy', '2345'))
+
+
